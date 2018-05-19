@@ -4,21 +4,24 @@ const bodyParser     = require('body-parser');
 const methodOverride = require('method-override');
 const busboy         = require('connect-busboy');
 const console        = require('console');
+const mongoose       = require('mongoose');
 
 
 // config
 const db = require('./server/config/db');
 const port = process.env.PORT || 8080;
 
-// mongoose.connect(db.url);
+const models = require('./server/models');
+mongoose.connect(db.url);
+mongoose.connection.on('error', console.error.bind(console, 'mongodb connection error:'));
 
 // configure express app
 const app = express();
 
-app.use(busboy);
+// app.use(busboy);
 app.use(bodyParser.json());
-app.use(methodOverride('X-HTTP-Method-Override'));
-app.use(express.static(__dirname + '/static')); // static files
+app.use(methodOverride());
+app.use(express.static(__dirname + '/dist')); // static files
 
 // hookup routes
 const routes = require('./server/routes');
