@@ -24,7 +24,8 @@ export class ProblemEditComponent implements OnInit {
   newTestCaseFormGroup() {
     return this.fb.group({
       input: ['', Validators.required],
-      output: ['', Validators.required]
+      output: ['', Validators.required],
+      sample: [false]
     });
   }
 
@@ -38,18 +39,42 @@ export class ProblemEditComponent implements OnInit {
   }
 
   ngOnInit() {
-    // this.route.params.subscribe(params => {
-    //   if (params['id']) {
-    //     this.id = +params['id'];
-    //   }
-    // });
+    this.route.params.subscribe(params => {
+      if (params['id']) {
+        this.id = params['id'];
+        this.http.get("/api/problems/" + this.id).subscribe(res => {
+          const data = res.json();
+          this.problemForm.controls['name'].setValue(data['name']);
+          this.problemForm.controls['text'].setValue(data['text']);
+          (<FormArray> this.problemForm.controls['testCases']).removeAt(0);
+          for (let testCase of data['testCases']) {
+            this.problemForm.controls['testCases']['controls'].push(this.fb.group({
+              input: testCase['input'],
+              output: testCase['output'],
+              sample: testCase['sample']
+            }));
+          }
+        });
+      }
+    });
   }
 
   submit() {
     const data = {
       name: this.problemForm.controls['name'].value,
-      text: this.problemForm.controls['text'].value
+      text: this.problemForm.controls['text'].value,
+      testCases: []
     };
+
+    for (let testCaseGroup of this.problemForm.controls['testCases']['controls']) {
+      data.testCases.push({
+        input: testCaseGroup.controls['input'].value,
+        output: testCaseGroup.controls['output'].value,
+        sample: testCaseGroup.controls['sample'].value
+      });
+    }
+
+    console.log(data);
 
     let post;
     if (this.id) post = this.http.post("/api/problems/" + this.id, data);

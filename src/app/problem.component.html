@@ -1,13 +1,36 @@
 <div class="container">
   <h1>{{ problem?.name }}</h1>
 
-  <span class="fa-layers fa-fw fa-4x" style="color: green;">
-    <i class="fas fa-file"></i>
-    <i class="fas fa-inverse fa-check" data-fa-transform="shrink-8 down-2"></i>
-  </span>
+  <div class="bg-light rounded p-3 border">
+    <h5>Problem Description</h5>
 
-  <span class="fa-layers fa-fw fa-4x" style="color: red;">
-    <i class="fas fa-file"></i>
-    <i class="fas fa-inverse fa-times" data-fa-transform="shrink-8 down-2"></i>
-  </span>
+    <p>{{ problem?.text }}</p>
+
+    <h5>Sample Test Cases</h5>
+  </div>
+
+  <br/>
+
+  <form [formGroup]="submitGroup">
+    <div class="form-group">
+      <label for="code">Code</label>
+      <textarea class="form-control" id="code" formControlName="code" rows="8" placeholder="Enter your code"></textarea>
+    </div>
+
+    <button class="btn btn-warning" (click)="submit()">Submit <i class="fas fa-cloud-upload-alt"></i></button>
+  </form>
+
+  <br/>
+
+  <ng-container *ngIf="submissions">
+    <span class="fa-layers fa-fw fa-4x" style="color: green;">
+      <i class="fas fa-file"></i>
+      <i class="fas fa-inverse fa-check" data-fa-transform="shrink-8 down-2"></i>
+    </span>
+
+    <span class="fa-layers fa-fw fa-4x" style="color: red;">
+      <i class="fas fa-file"></i>
+      <i class="fas fa-inverse fa-times" data-fa-transform="shrink-8 down-2"></i>
+    </span>
+  </ng-container>
 </div>

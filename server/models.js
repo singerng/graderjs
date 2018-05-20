@@ -4,7 +4,7 @@ const Types = mongoose.Schema.Types;
 const problemSchema = new mongoose.Schema({
   name: { type: Types.String, required: true },
   text: { type: Types.String, required: true },
-  cases: [{
+  testCases: [{
     sample: { type: Types.Boolean, default: false },
     input: Types.String,
     output: Types.String
@@ -17,9 +17,10 @@ const submissionSchema = new mongoose.Schema({
   code: String,
   date: { type: Types.Date, default: Date.now },
   problem: { type: Types.ObjectId, ref: Problem },
-  cases: [{
+  testCases: [{
     correct: Types.Boolean,
-    desc: Types.String
+    desc: Types.String,
+    time: Types.Number
   }],
   done: Types.Boolean
 });
