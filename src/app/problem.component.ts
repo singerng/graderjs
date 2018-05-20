@@ -7,14 +7,15 @@ import { timer } from 'rxjs/observable/timer';
 
 @Component({
   selector: 'problem',
-  templateUrl: './problem.component.html'
+  templateUrl: './problem.component.html',
+  styleUrls: ['./problem.component.scss']
 })
 export class ProblemComponent implements OnInit {
   id: Number;
   problem: any;
   submissions: any;
   submitGroup: any;
-  timerSubscription: Subscription;
+  timerSubscriptions: Subscription[];
 
   constructor(private fb: FormBuilder, private router: Router, private route: ActivatedRoute, private http: Http) {
     this.submitGroup = fb.group({
@@ -42,10 +43,10 @@ export class ProblemComponent implements OnInit {
     this.http.post("/api/problems/submit/" + this.id, {
       code: this.submitGroup.controls['code'].value
     }).subscribe(() => {
-      this.timerSubscription = timer(0, 500).subscribe(() => {
-        if (this.submissions && this.submissions.done) this.timerSubscription.unsubscribe();
+      let index = this.timerSubscriptions.push(timer(0, 100).subscribe(() => {
+        if (this.submissions && this.submissions.done) this.timerSubscriptions[index].unsubscribe();
         else this.reloadSubmissions();
-      })
+      }));
     });
   }
 }

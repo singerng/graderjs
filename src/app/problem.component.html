@@ -17,20 +17,40 @@
       <textarea class="form-control" id="code" formControlName="code" rows="8" placeholder="Enter your code"></textarea>
     </div>
 
-    <button class="btn btn-warning" (click)="submit()">Submit <i class="fas fa-cloud-upload-alt"></i></button>
+    <button class="btn btn-warning px-5 mx-auto" (click)="submit()">Submit <i class="fas fa-cloud-upload-alt"></i></button>
   </form>
 
   <br/>
 
   <ng-container *ngIf="submissions">
-    <span class="fa-layers fa-fw fa-4x" style="color: green;">
-      <i class="fas fa-file"></i>
-      <i class="fas fa-inverse fa-check" data-fa-transform="shrink-8 down-2"></i>
-    </span>
+    <div class="card mb-3" *ngFor="let submission of submissions; let i = index">
+      <div class="card-body">
+        <div class="row">
+          <h5 class="card-title">
 
-    <span class="fa-layers fa-fw fa-4x" style="color: red;">
-      <i class="fas fa-file"></i>
-      <i class="fas fa-inverse fa-times" data-fa-transform="shrink-8 down-2"></i>
-    </span>
+            Submission #{{ submissions.length-i }}
+            <span class="text-muted">at {{ submission.date|date:'short' }}</span>
+          </h5>
+
+          <div class="ml-auto">
+            <strong>{{ submission.correct }} / {{ submission.total }}</strong>
+            <i class="fas fa-cog fa-spin" *ngIf="!submission.done"></i>
+          </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-12 col-md-6 col-lg-2 text-center" *ngFor="let testCase of submission.testCases">
+              <span class="fa-layers fa-fw fa-4x" [ngClass]="{ 'color-correct': testCase.correct, 'color-incorrect': testCase.correct == false }">
+                <i class="fas fa-file"></i>
+                <i class="fas fa-inverse" [ngClass]="{ 'fa-check': testCase.correct, 'fa-times': testCase.correct == false,
+                                                        'fa-cog': testCase.correct == null, 'fa-spin': testCase.correct == null }"
+                   data-fa-transform="shrink-8 down-2"></i>
+              </span><br/>
+              <span class="small">
+                <strong>{{ testCase.desc }}</strong> <span *ngIf="testCase.correct">({{ testCase.time|number:'.3-3' }} s)</span>
+              </span>
+            </div>
+        </div>
+      </div>
+    </div>
   </ng-container>
 </div>

@@ -7,8 +7,8 @@ const tmp = require('tmp');
 
 const router = express.Router();
 
+
 router.post("/problems/submit/:id", (req, res) => {
-  console.log(req.params.id);
   models.Problem.findById(req.params.id, (err, problem) => {
     if (err) {
       res.status(404).send({ });
@@ -16,22 +16,62 @@ router.post("/problems/submit/:id", (req, res) => {
     }
     const code = req.body['code'];
 
-    const intmp = tmp.fileSync();
-    const outmp = tmp.fileSync();
-    const codetmp = tmp.fileSync();
-    console.log("setup temp files");
+    const submission = new models.Submission({
+      code: req.body['code'],
+      problem: problem._id,
+      correct: 0,
+      total: problem.testCases.length
+    });
+    submission.save().then(submission => {
+      console.log("saved");
 
-    fs.writeSync(intmp.fd, problem.testCases[0].input);
-    fs.writeSync(outmp.fd, problem.testCases[0].output);
-    fs.writeSync(codetmp.fd, code);
-    console.log("wrote to temp files");
+      const promise = Promise.resolve();
+      for (let testCase of problem.testCases) {
+        promise.then(() => {
+          const intmp = tmp.fileSync();
+          const outmp = tmp.fileSync();
+          const codetmp = tmp.fileSync();
 
-    let pythonProcess = spawn('python', ["../pygrader/pygrader/__init__.py", problem.name, "py", intmp.name, outmp.name, codetmp.name]);
-    console.log("spawned python");
+          fs.writeSync(intmp.fd, testCase.input);
+          fs.writeSync(outmp.fd, testCase.output);
+          fs.writeSync(codetmp.fd, code);
 
-    pythonProcess.stdout.on('data', function(data) {
-      result = JSON.parse(data.toString());
-      console.log(result);
+          // add a current loading test case
+          submission.testCases.push({
+            correct: true
+          });
+          console.log(submission);
+          submission.save().then(submission => {
+            console.log("spawning");
+            let pythonProcess = spawn('python', ["../pygrader/pygrader/__init__.py", problem.name, "py", intmp.name, outmp.name, codetmp.name]);
+
+            console.log("spawned");
+            pythonProcess.stdout.on('data', function (data) {
+              const result = JSON.parse(data.toString());
+
+              console.log("setting testcase");
+              submission.testCases[submission.testCases.length-1] = {
+                correct: result.correct,
+                message: result.message,
+                time: result.time
+              };
+
+              if (result.correct) submission.correct++;
+
+              if (testCase == problem.testCases[problem.testCases.length - 1]) {
+                submission.done = true;
+              }
+              console.log("here saving");
+
+              submission.save().then(() => Promise.resolve());
+            });
+          });
+        });
+      }
+
+      res.send({ });
+    }).catch(() => {
+      res.status(500).send({ });
     });
   });
 });
@@ -51,7 +91,6 @@ router.post("/problems", (req, res) => {
 router.post("/problems/:id", (req, res) => {
   models.Problem.findByIdAndUpdate(req.params.id, { $set: req.body }, (err, problem) => {
     if (err) {
-      console.log(err);
       res.status(404).send({ });
       return;
     }
@@ -70,7 +109,7 @@ router.get("/problems/:id", (req, res) => {
 });
 
 router.get("/problems/submissions/:id", (req, res) => {
-  models.Submission.find({ problem: req.params.id }, (err, submissions) => {
+  models.Submission.find({ problem: req.params.id }).sort('-date').exec((err, submissions) => {
     if (err) {
       res.status(404).send({ });
       return;

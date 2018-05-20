@@ -12,6 +12,7 @@ const db = require('./server/config/db');
 const port = process.env.PORT || 8080;
 
 const models = require('./server/models');
+mongoose.Promise = global.Promise;
 mongoose.connect(db.url);
 mongoose.connection.on('error', console.error.bind(console, 'mongodb connection error:'));
 

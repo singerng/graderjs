@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+mongoose.Promise = global.Promise;
 const Types = mongoose.Schema.Types;
 
 const problemSchema = new mongoose.Schema({
@@ -14,14 +15,16 @@ const Problem = mongoose.model('Problem', problemSchema);
 
 
 const submissionSchema = new mongoose.Schema({
-  code: String,
+  code: Types.String,
   date: { type: Types.Date, default: Date.now },
   problem: { type: Types.ObjectId, ref: Problem },
   testCases: [{
     correct: Types.Boolean,
-    desc: Types.String,
+    message: Types.String,
     time: Types.Number
   }],
+  correct: Types.Number,
+  total: Types.Number,
   done: Types.Boolean
 });
 const Submission = mongoose.model('Submission', submissionSchema);

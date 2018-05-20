@@ -10,6 +10,7 @@ import { ProblemEditComponent } from './problem.edit.component';
 
 const appRoutes = [
   { path: 'problems/create', component: ProblemEditComponent },
+  { path: 'problems/edit', component: ProblemEditComponent },
   { path: 'problems/edit/:id', component: ProblemEditComponent },
   { path: 'problems/:id', component: ProblemComponent }
 ];
